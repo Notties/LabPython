@@ -14,7 +14,7 @@ tokenizer.fit_on_texts(csv['text'].values)
 
 data = pd.concat([csv], ignore_index=True)
 
-text = 'สินค้าไม่มีคุณภาพ'
+text = 'สินค้าไม่มีคุณภาพ..'
 seq = tokenizer.texts_to_sequences([text])
 padded = pad_sequences(seq, 9)
 pred = model.predict(padded)

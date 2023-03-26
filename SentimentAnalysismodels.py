@@ -6,11 +6,8 @@ from keras.models import Sequential, load_model
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers import Dense, Embedding, LSTM, Conv1D, MaxPooling1D, Dropout
-from keras.utils.np_utils import to_categorical
 
 import matplotlib.pyplot as plt
-from pythainlp import word_tokenize
-from pythainlp.corpus.common import thai_stopwords
 plt.style.use('ggplot')
 
 # load the data from CSV file
