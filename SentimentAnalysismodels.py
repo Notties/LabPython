@@ -6,20 +6,22 @@ from keras.models import Sequential, load_model
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers import Dense, Embedding, LSTM, Conv1D, MaxPooling1D, Dropout
-
+from pythainlp.corpus import thai_stopwords
 import matplotlib.pyplot as plt
 plt.style.use('ggplot')
 
 # load the data from CSV file
-csv = pd.read_csv("data.csv", encoding='utf-8')
-texts = csv['text'].tolist()
-sentiments = csv['sentiment'].tolist()
+# csv = pd.read_csv("data.csv", encoding='utf-8')
+# texts = csv['text'].tolist()
+# sentiments = csv['sentiment'].tolist()
 
-# th_data = pd.read_csv('th_dataset.csv', encoding='utf-8')
-# en_data = pd.read_csv('en_dataset.csv', encoding='utf-8')
+th_data = pd.read_csv('datasetTH.csv', encoding='utf-8')
+en_data = pd.read_csv('datasetEN.csv', encoding='utf-8')
 
-data = pd.concat([csv], ignore_index=True)
+data = pd.concat([th_data, en_data], ignore_index=True)
 
+sentiments = data['sentiment'].tolist()
+texts = data['text'].tolist()
 
 # prepare the text data
 tokenizer = Tokenizer(num_words=5000, split=' ')
