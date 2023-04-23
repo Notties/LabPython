@@ -11,17 +11,18 @@ import matplotlib.pyplot as plt
 plt.style.use('ggplot')
 
 # load the data from CSV file
-# csv = pd.read_csv("data.csv", encoding='utf-8')
-# texts = csv['text'].tolist()
-# sentiments = csv['sentiment'].tolist()
+csv = pd.read_csv("datasss.csv", encoding='utf-8')
+texts = csv['text'].tolist()
+sentiments = csv['sentiment'].tolist()
 
-th_data = pd.read_csv('datasetTH.csv', encoding='utf-8')
-en_data = pd.read_csv('datasetEN.csv', encoding='utf-8')
+# th_data = pd.read_csv('datasetTH.csv', encoding='utf-8')
+# en_data = pd.read_csv('datasetEN.csv', encoding='utf-8')
 
-data = pd.concat([th_data, en_data], ignore_index=True)
+# data = pd.concat([th_data, en_data], ignore_index=True)
+# sentiments = data['sentiment'].tolist()
+# texts = data['text'].tolist()
 
-sentiments = data['sentiment'].tolist()
-texts = data['text'].tolist()
+data = pd.concat([csv], ignore_index=True)
 
 # prepare the text data
 tokenizer = Tokenizer(num_words=5000, split=' ')
