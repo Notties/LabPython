@@ -1,5 +1,6 @@
-import numpy as np
+from keras.models import load_model
 import pandas as pd
+import numpy as np
 import pythainlp
 import re
 import nltk
@@ -11,12 +12,16 @@ from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer
 from keras.preprocessing.text import Tokenizer
 from keras.utils import pad_sequences
-from keras.models import load_model
-
 
 # Load the saved model
 model = load_model('sentiment_analysis_model.h5')
 
+# load X_train from the saved binary file
+X_train = np.load('X_train.npy', allow_pickle=True)
+tokenizer = Tokenizer(num_words=5000)
+tokenizer.fit_on_texts(X_train)
+
+# Define the preprocess_text function
 def preprocess_text(text, lang):
     if lang == "th":
         # tokenize the text
@@ -33,49 +38,42 @@ def preprocess_text(text, lang):
         # stem the words
         stemmer = SnowballStemmer('english')
         tokens = [stemmer.stem(word) for word in tokens]
-        
+
     # join the tokens back into a single string
     text = " ".join(tokens)
     # remove non-alphabetic characters and extra whitespaces
     text = re.sub('[^A-Za-zก-๙]+', ' ', text).strip()
     return text
 
-# Define the labels for sentiment categories
-labels = ['Negative', 'Neutral', 'Positive']
-
-# Load X_train from the CSV file
-X_train = pd.read_csv('X_train.csv')
-
-tokenizer = Tokenizer(num_words=5000)
-tokenizer.fit_on_texts(X_train)
-
-# Define a function to predict the sentiment of a text
+# Define the function to preprocess the new data and make predictions
 def predict_sentiment(text, lang):
-    # Preprocess the text data
+    # Preprocess the text
     text = preprocess_text(text, lang)
+    # Tokenize the text
+    text = tokenizer.texts_to_sequences([text])
+    # Pad the sequences to a maximum length of MAX_SEQUENCE_LENGTH
+    text = pad_sequences(text, maxlen=100)
+    # Make predictions
+    predictions = model.predict(text)
+    # Return the sentiment label and percentage
+    sentiment_labels = ['negative', 'neutral', 'positive']
+    sentiment = sentiment_labels[np.argmax(predictions)]
+    percentage = round(np.max(predictions)*100, 2)
+    return sentiment, percentage
 
-    # Convert the text to a sequence of integers
-    sequence = tokenizer.texts_to_sequences([text])
 
-    # Pad the sequence with zeros to match the max sequence length
-    padded_sequence = pad_sequences(sequence, maxlen=100)
+# text = "It's good"
+# sentiment, percentage = predict_sentiment(text, lang="en")
+# print(sentiment, percentage)
 
-    # Use the model to predict the sentiment category of the text
-    pred = model.predict(padded_sequence)[0]
+# text = "It's bad"
+# sentiment, percentage = predict_sentiment(text, lang="en")
+# print(sentiment, percentage)
 
-    # Get the index of the predicted category with the highest probability
-    index = np.argmax(pred)
+text = "แย่มากเลยนะ ไม่คิดว่าจะ"
+sentiment, percentage = predict_sentiment(text, lang="th")
+print(sentiment, percentage)
 
-    # Return the predicted sentiment category and the probability of the prediction
-    return labels[index], pred[index]
-
-# Test the model on new data
-text = 'I love this product!'
-sentiment, prob = predict_sentiment(text, lang="en")
-print(f'Text: {text}')
-print(f'Sentiment: {sentiment}, Probability: {prob}')
-
-text = 'ก็ดีนะ'
-sentiment, prob = predict_sentiment(text, lang="th")
-print(f'Text: {text}')
-print(f'Sentiment: {sentiment}, Probability: {prob}')
+# text = "ดีมาก"
+# sentiment, percentage = predict_sentiment(text, lang="th")
+# print(sentiment, percentage)

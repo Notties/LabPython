@@ -68,8 +68,8 @@ df = pd.concat([df_en, df_th], ignore_index=True)
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(df['text'], df['sentiment'], test_size=0.2, random_state=42)
 
-# Save X_train to a CSV file
-X_train.to_csv('X_train.csv', index=False)
+# save X_train to a binary file
+np.save('X_train.npy', X_train)
 
 # Tokenize the text data
 tokenizer = Tokenizer(num_words=5000)
@@ -114,71 +114,9 @@ history = model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=1
 model.save('sentiment_analysis_model.h5')
 
 # Test the model on new data
-text = preprocess_text("This is a test sentence.")
+text = preprocess_text("This is a test sentence.", lang="en")
 seq = tokenizer.texts_to_sequences([text])
 padded = pad_sequences(seq, maxlen=MAX_SEQUENCE_LENGTH)
 pred = model.predict(padded)
 labels = ['Negative', 'Neutral', 'Positive']
 print('Sentiment:', labels[np.argmax(pred)])
-
-
-
-# # Load the saved model
-# model = load_model('sentiment_model.h5')
-
-# # Define the labels for sentiment categories
-# labels = ['Negative', 'Neutral', 'Positive']
-
-# def preprocess_text(text, lang):
-#     if lang == "th":
-#         # tokenize the text
-#         tokens = pythainlp.word_tokenize(text, engine='newmm')
-#         # remove stop words
-#         stop_words = thai_stopwords()
-#         tokens = [word for word in tokens if word not in stop_words]
-#     else: # lang == "en"
-#         # tokenize the text
-#         tokens = nltk.word_tokenize(text)
-#         # remove stop words
-#         stop_words = set(stopwords.words('english'))
-#         tokens = [word for word in tokens if word.lower() not in stop_words]
-#         # stem the words
-#         stemmer = SnowballStemmer('english')
-#         tokens = [stemmer.stem(word) for word in tokens]
-        
-#     # join the tokens back into a single string
-#     text = " ".join(tokens)
-#     # remove non-alphabetic characters and extra whitespaces
-#     text = re.sub('[^A-Za-zก-๙]+', ' ', text).strip()
-#     return text
-
-# # Define a function to predict the sentiment of a text
-# def predict_sentiment(text):
-#     # Preprocess the text data
-#     text = preprocess_text(text)
-
-#     # Convert the text to a sequence of integers
-#     sequence = tokenizer.texts_to_sequences([text])
-
-#     # Pad the sequence with zeros to match the max sequence length
-#     padded_sequence = pad_sequences(sequence, maxlen=MAX_SEQUENCE_LENGTH)
-
-#     # Use the model to predict the sentiment category of the text
-#     pred = model.predict(padded_sequence)[0]
-
-#     # Get the index of the predicted category with the highest probability
-#     index = np.argmax(pred)
-
-#     # Return the predicted sentiment category and the probability of the prediction
-#     return labels[index], pred[index]
-
-# # Test the model on new data
-# text = 'I love this product!'
-# sentiment, prob = predict_sentiment(text)
-# print(f'Text: {text}')
-# print(f'Sentiment: {sentiment}, Probability: {prob}')
-
-# text = 'This product is terrible!'
-# sentiment, prob = predict_sentiment(text)
-# print(f'Text: {text}')
-# print(f'Sentiment: {sentiment}, Probability: {prob}')
