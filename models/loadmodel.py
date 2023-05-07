@@ -1,5 +1,4 @@
 from keras.models import load_model
-import pandas as pd
 import numpy as np
 import pythainlp
 import re
@@ -14,10 +13,10 @@ from keras.preprocessing.text import Tokenizer
 from keras.utils import pad_sequences
 
 # Load the saved model
-model = load_model('sentiment_analysis_model.h5')
+model = load_model('/sentiment_analysis_model.h5')
 
 # load X_train from the saved binary file
-X_train = np.load('X_train.npy', allow_pickle=True)
+X_train = np.load('/X_train.npy', allow_pickle=True)
 tokenizer = Tokenizer(num_words=5000)
 tokenizer.fit_on_texts(X_train)
 
@@ -62,18 +61,6 @@ def predict_sentiment(text, lang):
     return sentiment, percentage
 
 
-# text = "It's good"
-# sentiment, percentage = predict_sentiment(text, lang="en")
-# print(sentiment, percentage)
-
-# text = "It's bad"
-# sentiment, percentage = predict_sentiment(text, lang="en")
-# print(sentiment, percentage)
-
-text = "แย่มากเลยนะ ไม่คิดว่าจะ"
-sentiment, percentage = predict_sentiment(text, lang="th")
+text = "It's good"
+sentiment, percentage = predict_sentiment(text, lang="en")
 print(sentiment, percentage)
-
-# text = "ดีมาก"
-# sentiment, percentage = predict_sentiment(text, lang="th")
-# print(sentiment, percentage)

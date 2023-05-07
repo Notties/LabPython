@@ -17,15 +17,7 @@ from keras.models import Sequential, load_model
 from keras.layers import Embedding, Conv1D, MaxPooling1D, GlobalMaxPooling1D, Dense, Dropout
 from keras.callbacks import EarlyStopping
 
-# from tensorflow.keras.preprocessing.text import Tokenizer
-# from tensorflow.keras.preprocessing.sequence import pad_sequences
-# from tensorflow.keras.models import Sequential
-# from tensorflow.keras.layers import Dense, Embedding, Conv1D, MaxPooling1D, Dropout, LSTM
-# from tensorflow.keras.callbacks import EarlyStopping
-# from tensorflow.keras.models import load_model
-
-
-# nltk.download('punkt')
+#nltk.download('punkt')
 
 # Load the English data from CSV file
 df_en = pd.read_csv("datasetEN.csv", encoding='utf-8')
@@ -112,6 +104,22 @@ history = model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=1
 
 # Save the model to a file
 model.save('sentiment_analysis_model.h5')
+
+# Define the function to preprocess the new data and make predictions
+def predict_sentiment(text, lang):
+    # Preprocess the text
+    text = preprocess_text(text, lang)
+    # Tokenize the text
+    text = tokenizer.texts_to_sequences([text])
+    # Pad the sequences to a maximum length of MAX_SEQUENCE_LENGTH
+    text = pad_sequences(text, maxlen=100)
+    # Make predictions
+    predictions = model.predict(text)
+    # Return the sentiment label and percentage
+    sentiment_labels = ['negative', 'neutral', 'positive']
+    sentiment = sentiment_labels[np.argmax(predictions)]
+    percentage = round(np.max(predictions)*100, 2)
+    return sentiment, percentage
 
 # Test the model on new data
 text = preprocess_text("This is a test sentence.", lang="en")
