@@ -1,130 +1,192 @@
 import pandas as pd
 import numpy as np
-import pythainlp
-import re
-import nltk
-from langdetect import detect
-from nltk.corpus import stopwords
-from pythainlp.corpus import thai_stopwords
-from pythainlp.corpus import thai_stopwords
-from nltk.corpus import stopwords
-from nltk.stem import SnowballStemmer
-
+import tensorflow as tf
+from pythainlp.tokenize import word_tokenize, Tokenizer
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
-from keras.preprocessing.text import Tokenizer
 from keras.utils import pad_sequences
 from keras.models import Sequential, load_model
-from keras.layers import Embedding, Conv1D, MaxPooling1D, GlobalMaxPooling1D, Dense, Dropout
-from keras.callbacks import EarlyStopping
-
-#nltk.download('punkt')
-
-# Load the English data from CSV file
-df_en = pd.read_csv("datasetEN.csv", encoding='utf-8')
+from keras.optimizers import Adam
+from pythainlp.corpus.common import thai_words
+from sklearn.metrics import classification_report
+ModelCheckpoint = tf.keras.callbacks.ModelCheckpoint
+KRTokenizer = tf.keras.preprocessing.text.Tokenizer
+ReduceLROnPlateau = tf.keras.callbacks.ReduceLROnPlateau
+Model = tf.keras.models.Model
+from gensim.models import Word2Vec
 
 # Load the Thai data from CSV file
-df_th = pd.read_csv("datasetTH.csv", encoding='utf-8')
+df_th = pd.read_csv("C:/LabPython/datasets/datasetTH.csv", encoding='utf-8')
+df = df_th.drop_duplicates()
 
-def preprocess_text(text, lang):
-    if lang == "th":
-        # tokenize the text
-        tokens = pythainlp.word_tokenize(str(text), engine='newmm')
-        # remove stop words
-        stop_words = thai_stopwords()
-        tokens = [word for word in tokens if word not in stop_words]
-    else: # lang == "en"
-        # tokenize the text
-        tokens = nltk.word_tokenize(str(text))
-        # remove stop words
-        stop_words = set(stopwords.words('english'))
-        tokens = [word for word in tokens if word.lower() not in stop_words]
-        # stem the words
-        stemmer = SnowballStemmer('english')
-        tokens = [stemmer.stem(word) for word in tokens]
-        
-    # join the tokens back into a single string
-    text = " ".join(tokens)
-    # remove non-alphabetic characters and extra whitespaces
-    text = re.sub('[^A-Za-zก-๙]+', ' ', text).strip()
-    return text
+neg_df = df[df.sentiment == "negative"]
+pos_df = df[df.sentiment == "positive"]
+sentiment_df = pd.concat([neg_df, pos_df])
 
-# Preprocess the English text data
-df_en['text'] = df_en['text'].apply(preprocess_text, lang="en")
+sentiment_df['clean_comments'] = df_th['text'].fillna('').apply(lambda x: x.lower())
+pun = '"#\'()*,-.;<=>[\\]^_`{|}~'
+pun
+sentiment_df['clean_comments'] = sentiment_df['clean_comments'].str.replace(r'[%s]' % (pun), '', regex=True)
+custom_words_list = set(thai_words())
+print('custom_words_list', len(custom_words_list))
 
-# Preprocess the Thai text data
-df_th['text'] = df_th['text'].apply(preprocess_text, lang="th")
+text = "โอเคบ่พวกเรารักภาษาบ้านเกิด"
+custom_tokenizer = Tokenizer(custom_words_list)
+print('word_tokenize', custom_tokenizer.word_tokenize(text))
 
-# Combine the preprocessed English and Thai data into a single DataFrame
-df = pd.concat([df_en, df_th], ignore_index=True)
+sentiment_df['clean_comments'] = sentiment_df['clean_comments'].apply(lambda x: custom_tokenizer.word_tokenize(x))
 
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(df['text'], df['sentiment'], test_size=0.2, random_state=42)
+tokenized_doc = sentiment_df['clean_comments']
+tokenized_doc = tokenized_doc.to_list()
 
-# save X_train to a binary file
-np.save('X_train.npy', X_train)
+# de-tokenization
+detokenized_doc = []
+for i in range(len(tokenized_doc)):
+#     print(tokenized_doc[i])
+    t = ' '.join(tokenized_doc[i])
+    detokenized_doc.append(t)
+    
+sentiment_df['clean_comments'] = detokenized_doc
 
-# Tokenize the text data
-tokenizer = Tokenizer(num_words=5000)
-tokenizer.fit_on_texts(X_train)
+cleaned_words = sentiment_df['clean_comments'].to_list()
+print('cleaned_words', cleaned_words[:1])
 
-X_train = tokenizer.texts_to_sequences(X_train)
-X_test = tokenizer.texts_to_sequences(X_test)
+def create_tokenizer(words, filters = ''):
+    token = KRTokenizer()
+    token.fit_on_texts(words)
+    return token
 
-# vocab_size = len(tokenizer.word_index) + 1
+train_word_tokenizer = create_tokenizer(cleaned_words)
+vocab_size = len(train_word_tokenizer.word_index) + 1
 
-# Pad the sequences to a maximum length of MAX_SEQUENCE_LENGTH
-MAX_SEQUENCE_LENGTH = 100
-X_train = pad_sequences(X_train, maxlen=MAX_SEQUENCE_LENGTH)
-X_test = pad_sequences(X_test, maxlen=MAX_SEQUENCE_LENGTH)
+def max_length(words):
+    return(len(max(words, key = len)))
 
-# Convert the sentiment labels to one-hot encoded vectors
-y_train = pd.get_dummies(y_train).values
-y_test = pd.get_dummies(y_test).values
+max_length = max_length(tokenized_doc)
+print('max_length', max_length)
 
-# Define the CNN model
-num_words=10000
-embedding_dim = 100
+def encoding_doc(token, words):
+    return(token.texts_to_sequences(words))
 
-model = Sequential()
-model.add(Embedding(input_dim=num_words, output_dim=embedding_dim, input_length=MAX_SEQUENCE_LENGTH))
-model.add(Conv1D(filters=128, kernel_size=5, activation='relu'))
-model.add(MaxPooling1D(pool_size=5))
-model.add(Conv1D(filters=64, kernel_size=5, activation='relu'))
-model.add(GlobalMaxPooling1D())
-model.add(Dropout(0.5))
-model.add(Dense(64, activation='relu'))
-model.add(Dense(3, activation='softmax'))
+encoded_doc = encoding_doc(train_word_tokenizer, cleaned_words)
 
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-print(model.summary())
+print('cleaned_words ',cleaned_words[0])
+print('encoded_doc ',encoded_doc[0])
 
-# Train the model
-es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=3)
-history = model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=10, batch_size=128, callbacks=[es])
+def padding_doc(encoded_doc, max_length):
+   return(pad_sequences(encoded_doc, maxlen = max_length, padding = "post"))
+
+padded_doc = padding_doc(encoded_doc, max_length)
+print("Shape of padded docs = ",padded_doc.shape)
+
+category = sentiment_df['sentiment'].to_list()
+unique_category = list(set(category))
+print('unique_category ', unique_category)
+
+output_tokenizer = create_tokenizer(unique_category)
+
+encoded_output = encoding_doc(output_tokenizer, category)
+print('category[0:2] ',category[0:2])
+print('encoded_output[0:2]', encoded_output[0:2])
+
+encoded_output = np.array(encoded_output).reshape(len(encoded_output), 1)
+print('encoded_output.shape ', encoded_output.shape)
+
+
+def one_hot(encode):
+  oh = OneHotEncoder(sparse_output = False)
+  return(oh.fit_transform(encode))
+
+num_classes = len(unique_category)
+output_one_hot = one_hot(encoded_output)
+print('encoded_output[0] ', encoded_output[0])
+print('output_one_hot[0] ', output_one_hot[0])
+
+train_X, val_X, train_Y, val_Y = train_test_split(padded_doc, output_one_hot, shuffle = True, test_size = 0.2, stratify=output_one_hot)
+
+print("Shape of train_X = %s and train_Y = %s" % (train_X.shape, train_Y.shape))
+print("Shape of val_X = %s and val_Y = %s" % (val_X.shape, val_Y.shape))
+
+
+
+# define the model
+adam = Adam(learning_rate=0.0001)
+EPOCHS = 100
+BS = 32
+DIMENSION = 100
+
+sentences = [st.split() for st in cleaned_words]
+w2v_model = Word2Vec(sentences, min_count=1, vector_size=DIMENSION, workers=6, sg=1, epochs=500)
+
+w2v_model.save('w2v_model.bin')
+new_model = Word2Vec.load('w2v_model.bin')
+
+embedding_matrix = np.zeros((vocab_size, DIMENSION))
+
+for word, i in train_word_tokenizer.word_index.items():
+    if word in new_model.wv.key_to_index:
+        embedding_vector = new_model.wv[word]
+        embedding_matrix[i] = embedding_vector
+
+# define the model
+def define_w2v_model(length, vocab_size, embedding_matrix):
+    # channel 1
+    inputs1 = tf.keras.layers.Input(shape=(length,))
+    embedding1 = tf.keras.layers.Embedding(vocab_size, DIMENSION, trainable = False, weights=[embedding_matrix])(inputs1)
+    conv1 = tf.keras.layers.Conv1D(filters=32, kernel_size=4, activation='relu')(embedding1)
+    drop1 = tf.keras.layers.Dropout(0.5)(conv1)
+    pool1 = tf.keras.layers.MaxPooling1D(pool_size=2)(drop1)
+    flat1 = tf.keras.layers.Flatten()(pool1)
+    # channel 2
+    inputs2 = tf.keras.layers.Input(shape=(length,))
+    embedding2 = tf.keras.layers.Embedding(vocab_size, DIMENSION, trainable = False, weights=[embedding_matrix])(inputs2)
+    conv2 = tf.keras.layers.Conv1D(filters=32, kernel_size=6, activation='relu')(embedding2)
+    drop2 = tf.keras.layers.Dropout(0.5)(conv2)
+    pool2 = tf.keras.layers.MaxPooling1D(pool_size=2)(drop2)
+    flat2 = tf.keras.layers.Flatten()(pool2)
+    # channel 3
+    inputs3 = tf.keras.layers.Input(shape=(length,))
+    embedding3 = tf.keras.layers.Embedding(vocab_size, DIMENSION, trainable = False, weights=[embedding_matrix])(inputs3)
+    conv3 = tf.keras.layers.Conv1D(filters=32, kernel_size=8, activation='relu')(embedding3)
+    drop3 = tf.keras.layers.Dropout(0.5)(conv3)
+    pool3 = tf.keras.layers.MaxPooling1D(pool_size=2)(drop3)
+    flat3 = tf.keras.layers.Flatten()(pool3)
+    # merge
+    merged = tf.keras.layers.concatenate([flat1, flat2, flat3])
+    # interpretation
+    dense1 = tf.keras.layers.Dense(10, activation='relu')(merged)
+    outputs = tf.keras.layers.Dense(num_classes, activation='softmax')(dense1)
+    model = Model(inputs=[inputs1, inputs2, inputs3], outputs=outputs)
+    # compile
+    model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
+    # summarize
+    print(model.summary())
+#     plot_model(model, show_shapes=True, to_file='multichannel.png')
+    return model
+
+model2 = define_w2v_model(max_length, vocab_size, embedding_matrix)
+
+filename = 'model2.h5'
+checkpoint = ModelCheckpoint(filename, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+
+learning_rate_reduction = ReduceLROnPlateau(monitor='val_loss', patience = 3, verbose=1,factor=0.1, min_lr=0.000001)
+callbacks_list = [checkpoint, learning_rate_reduction]
+
+hist2 = model2.fit([train_X, train_X, train_X], train_Y, epochs = EPOCHS, batch_size = BS, validation_data = ([val_X, val_X, val_X], val_Y), callbacks = [callbacks_list], shuffle=True)
 
 # Save the model to a file
-model.save('sentiment_analysis_model.h5')
+predict_model = load_model(filename) 
+score = predict_model.evaluate([val_X, val_X, val_X], val_Y, verbose=0)
+print('Validate loss:', score[0])
+print('Validate accuracy:', score[1])
 
-# Define the function to preprocess the new data and make predictions
-def predict_sentiment(text, lang):
-    # Preprocess the text
-    text = preprocess_text(text, lang)
-    # Tokenize the text
-    text = tokenizer.texts_to_sequences([text])
-    # Pad the sequences to a maximum length of MAX_SEQUENCE_LENGTH
-    text = pad_sequences(text, maxlen=100)
-    # Make predictions
-    predictions = model.predict(text)
-    # Return the sentiment label and percentage
-    sentiment_labels = ['negative', 'neutral', 'positive']
-    sentiment = sentiment_labels[np.argmax(predictions)]
-    percentage = round(np.max(predictions)*100, 2)
-    return sentiment, percentage
+predicted_classes = np.argmax(predict_model.predict([val_X, val_X, val_X]), axis=-1)
+print('predicted_classes', predicted_classes.shape)
 
-# Test the model on new data
-text = preprocess_text("This is a test sentence.", lang="en")
-seq = tokenizer.texts_to_sequences([text])
-padded = pad_sequences(seq, maxlen=MAX_SEQUENCE_LENGTH)
-pred = model.predict(padded)
-labels = ['Negative', 'Neutral', 'Positive']
-print('Sentiment:', labels[np.argmax(pred)])
+y_true = np.argmax(val_Y,axis = 1)
+print(val_Y[0])
+print(y_true[0])
+
+label_dict = output_tokenizer.word_index
+label = [key for key, value in label_dict.items()]
+print(classification_report(y_true, predicted_classes, target_names=label, digits=4))
