@@ -18,6 +18,8 @@ ModelCheckpoint = tf.keras.callbacks.ModelCheckpoint
 KRTokenizer = tf.keras.preprocessing.text.Tokenizer
 ReduceLROnPlateau = tf.keras.callbacks.ReduceLROnPlateau
 Model = tf.keras.models.Model
+from gensim.models import Word2Vec
+import pickle
 
 # Load the Thai data from CSV file
 df_th = pd.read_csv("C:/LabPython/datasets/dataTH.csv", encoding='utf-8')
@@ -25,7 +27,8 @@ df = df_th.drop_duplicates()
 
 neg_df = df[df.sentiment == "negative"]
 pos_df = df[df.sentiment == "positive"]
-sentiment_df = pd.concat([neg_df, pos_df])
+neu_df = df[df.sentiment == "neutral"]
+sentiment_df = pd.concat([neg_df, pos_df, neu_df])
 
 sentiment_df['clean_comments'] = df_th['text'].fillna('').apply(lambda x: x.lower())
 pun = '"#\'()*,-.;<=>[\\]^_`{|}~'
@@ -42,7 +45,9 @@ sentiment_df['clean_comments'] = sentiment_df['clean_comments'].apply(lambda x: 
 
 tokenized_doc = sentiment_df['clean_comments']
 tokenized_doc = tokenized_doc.to_list()
-
+with open('tokenized_doc.pkl', 'wb') as file:
+    pickle.dump(tokenized_doc, file)
+    
 # de-tokenization
 detokenized_doc = []
 for i in range(len(tokenized_doc)):
@@ -55,6 +60,9 @@ sentiment_df['clean_comments'] = detokenized_doc
 cleaned_words = sentiment_df['clean_comments'].to_list()
 print('cleaned_words', cleaned_words[:1])
 
+with open('cleaned_words.pkl', 'wb') as file:
+    pickle.dump(cleaned_words, file)
+
 def create_tokenizer(words, filters = ''):
     token = KRTokenizer()
     token.fit_on_texts(words)
@@ -62,6 +70,10 @@ def create_tokenizer(words, filters = ''):
 
 train_word_tokenizer = create_tokenizer(cleaned_words)
 vocab_size = len(train_word_tokenizer.word_index) + 1
+print('train_word_tokenizer', train_word_tokenizer)
+
+with open('train_word_tokenizer.pkl', 'wb') as file:
+    pickle.dump(train_word_tokenizer, file)
 
 def max_length(words):
     return(len(max(words, key = len)))
@@ -88,6 +100,10 @@ unique_category = list(set(category))
 print('unique_category ', unique_category)
 
 output_tokenizer = create_tokenizer(unique_category)
+print('output_tokenizer', output_tokenizer)
+
+with open('output_tokenizer.pkl', 'wb') as file:
+    pickle.dump(output_tokenizer, file)
 
 encoded_output = encoding_doc(output_tokenizer, category)
 print('category[0:2] ',category[0:2])
@@ -113,7 +129,7 @@ print("Shape of val_X = %s and val_Y = %s" % (val_X.shape, val_Y.shape))
 
 # define the model
 adam = Adam(learning_rate=0.0001)
-EPOCHS = 40
+EPOCHS = 100
 BS = 32
 DIMENSION = 100
 
