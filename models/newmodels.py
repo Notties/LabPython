@@ -9,14 +9,18 @@ from keras.models import Sequential, load_model
 from keras.optimizers import Adam
 from pythainlp.corpus.common import thai_words
 from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+import seaborn as sn
+from gensim.models import Word2Vec
+import matplotlib.pyplot as plt
+
 ModelCheckpoint = tf.keras.callbacks.ModelCheckpoint
 KRTokenizer = tf.keras.preprocessing.text.Tokenizer
 ReduceLROnPlateau = tf.keras.callbacks.ReduceLROnPlateau
 Model = tf.keras.models.Model
-from gensim.models import Word2Vec
 
 # Load the Thai data from CSV file
-df_th = pd.read_csv("C:/LabPython/datasets/datasetTH.csv", encoding='utf-8')
+df_th = pd.read_csv("C:/LabPython/datasets/dataTH.csv", encoding='utf-8')
 df = df_th.drop_duplicates()
 
 neg_df = df[df.sentiment == "negative"]
@@ -107,11 +111,9 @@ train_X, val_X, train_Y, val_Y = train_test_split(padded_doc, output_one_hot, sh
 print("Shape of train_X = %s and train_Y = %s" % (train_X.shape, train_Y.shape))
 print("Shape of val_X = %s and val_Y = %s" % (val_X.shape, val_Y.shape))
 
-
-
 # define the model
 adam = Adam(learning_rate=0.0001)
-EPOCHS = 100
+EPOCHS = 40
 BS = 32
 DIMENSION = 100
 
@@ -190,3 +192,13 @@ print(y_true[0])
 label_dict = output_tokenizer.word_index
 label = [key for key, value in label_dict.items()]
 print(classification_report(y_true, predicted_classes, target_names=label, digits=4))
+
+cm = confusion_matrix(y_true, predicted_classes)
+np.savetxt("confusion_matrix.csv", cm, delimiter=",")
+
+df_cm = pd.DataFrame(cm, range(2), range(2))
+plt.figure(figsize=(20,14))
+sn.set(font_scale=1.2) # for label size
+sn.heatmap(df_cm, annot=True, annot_kws={"size": 14}, fmt='g') # for num predict size
+
+plt.show()
