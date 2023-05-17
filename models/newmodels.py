@@ -1,6 +1,10 @@
 import pandas as pd
 import numpy as np
 import tensorflow as tf
+import pickle
+import matplotlib.pyplot as plt
+import seaborn as sn
+
 from pythainlp.tokenize import word_tokenize, Tokenizer
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
@@ -10,16 +14,13 @@ from keras.optimizers import Adam
 from pythainlp.corpus.common import thai_words
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
-import seaborn as sn
 from gensim.models import Word2Vec
-import matplotlib.pyplot as plt
 
 ModelCheckpoint = tf.keras.callbacks.ModelCheckpoint
 KRTokenizer = tf.keras.preprocessing.text.Tokenizer
 ReduceLROnPlateau = tf.keras.callbacks.ReduceLROnPlateau
 Model = tf.keras.models.Model
-from gensim.models import Word2Vec
-import pickle
+
 
 # Load the Thai data from CSV file
 df_th = pd.read_csv("C:/LabPython/datasets/dataTH.csv", encoding='utf-8')
@@ -129,7 +130,7 @@ print("Shape of val_X = %s and val_Y = %s" % (val_X.shape, val_Y.shape))
 
 # define the model
 adam = Adam(learning_rate=0.0001)
-EPOCHS = 100
+EPOCHS = 40
 BS = 32
 DIMENSION = 100
 

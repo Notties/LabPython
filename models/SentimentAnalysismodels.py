@@ -17,13 +17,18 @@ from keras.models import Sequential, load_model
 from keras.layers import Embedding, Conv1D, MaxPooling1D, GlobalMaxPooling1D, Dense, Dropout
 from keras.callbacks import EarlyStopping
 
-#nltk.download('punkt')
+nltk.download('punkt')
 
 # Load the English data from CSV file
-df_en = pd.read_csv("datasetEN.csv", encoding='utf-8')
+# df_en = pd.read_csv("datasetEN.csv", encoding='utf-8')
 
-# Load the Thai data from CSV file
-df_th = pd.read_csv("datasetTH.csv", encoding='utf-8')
+# # Load the Thai data from CSV file
+# df_th = pd.read_csv("datasetTH.csv", encoding='utf-8')
+df_th = pd.read_csv("C:/LabPython/datasets/dataTH.csv", encoding='utf-8')
+df = df_th.drop_duplicates()
+neg_df = df[df.sentiment == "negative"]
+pos_df = df[df.sentiment == "positive"]
+neu_df = df[df.sentiment == "neutral"]
 
 def preprocess_text(text, lang):
     if lang == "th":
@@ -49,13 +54,14 @@ def preprocess_text(text, lang):
     return text
 
 # Preprocess the English text data
-df_en['text'] = df_en['text'].apply(preprocess_text, lang="en")
+sentiment_df = pd.concat([neg_df, pos_df, neu_df])
+sentiment_df['text'] = sentiment_df['text'].apply(preprocess_text, lang="th")
 
 # Preprocess the Thai text data
-df_th['text'] = df_th['text'].apply(preprocess_text, lang="th")
+# df_th['text'] = df_th['text'].apply(preprocess_text, lang="th")
 
 # Combine the preprocessed English and Thai data into a single DataFrame
-df = pd.concat([df_en, df_th], ignore_index=True)
+df = pd.concat([sentiment_df], ignore_index=True)
 
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(df['text'], df['sentiment'], test_size=0.2, random_state=42)
