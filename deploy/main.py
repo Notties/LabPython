@@ -1,5 +1,6 @@
 # model
 from modelTH import predict as model_predict
+from modelTH import predictTextObject as model_predict_Object
 # Web Server
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,12 +26,24 @@ def index():
 def predict(payload: dict):
     text = payload.get('text', '')
     if text:
-        sentiment, confidence = model_predict(text)
-        percent = round(confidence * 100)  # Convert decimal to percentage and round to nearest integer
-        return {'text': text, 'sentiment': sentiment, 'percent': f'{percent}%'}
+        data = model_predict(text)
+        return { "status": "success", "data": data }
     else:
-        return {'error': 'Invalid payload.'}
+        return { "status": "error", "msg": "Invalid payload." }
 
+@app.post('/predictObject')
+def predictObject(payload: dict):
+    texts = payload.get('data', '')
+    result = {}
+    data = texts
+    for comment in data:
+        text = comment['Text']
+        sentiment, percentage = model_predict_Object(str(text))
+        comment['Sentiment'] = sentiment
+        comment['Percentage'] = percentage
+    result = { "status": "success", "data": data }
+
+    return result
 
 # start server
 if __name__ == '__main__':

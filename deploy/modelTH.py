@@ -37,9 +37,25 @@ def predict(new_text):
     prediction = model.predict(new_text)[0]
 
     # Get the predicted sentiment and confidence level
-    sentiments = ['Negative', 'Neutral', 'Positive']
+    sentiments = ['negative', 'neutral', 'positive']
     sentiment = sentiments[np.argmax(prediction)]
     confidence = round(float(np.max(prediction)), 2)
+    percent = round(confidence * 100)
 
-    # Display the result
-    return sentiment, confidence
+    return {'sentiment': sentiment, 'percentage': f'{percent}'}
+
+def predictTextObject(new_text):
+    new_text = preprocess_text(new_text)
+
+    new_text = tokenizer.texts_to_sequences([new_text])  # Convert text to sequences of integers
+    new_text = pad_sequences(new_text, maxlen=128)
+    # Make the prediction
+    prediction = model.predict(new_text)[0]
+
+    # Get the predicted sentiment and confidence level
+    sentiments = ['negative', 'neutral', 'positive']
+    sentiment = sentiments[np.argmax(prediction)]
+    confidence = round(float(np.max(prediction)), 2)
+    percent = round(confidence * 100)
+
+    return sentiment, f'{percent}'
