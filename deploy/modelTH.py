@@ -9,9 +9,9 @@ from keras.models import load_model
 from keras.utils import pad_sequences
 
 #load model and tokenizer
-with open('C:/Sentiment-Analysis-Model/savedmodel/tokenizer.pickle', 'rb') as handle:
+with open('C:/Sentiment-Analysis-Model/savedmodel/tokenizerTH.pickle', 'rb') as handle:
     tokenizer = pickle.load(handle)
-model = load_model('C:/Sentiment-Analysis-Model/savedmodel/sentiment_analysis_model.h5')
+model = load_model('C:/Sentiment-Analysis-Model/savedmodel/sentiment_analysis_modelTH.h5')
 
 # Define preprocess for Thai text
 def preprocess_text(text):
@@ -28,7 +28,7 @@ def preprocess_text(text):
     text = re.sub('[^A-Za-zก-๙]+', ' ', text).strip()
     return text
 
-def predict(new_text):
+def predictTH(new_text):
     new_text = preprocess_text(new_text)
 
     new_text = tokenizer.texts_to_sequences([new_text])  # Convert text to sequences of integers
@@ -44,7 +44,7 @@ def predict(new_text):
 
     return {'sentiment': sentiment, 'percentage': f'{percent}'}
 
-def predictTextObject(new_text):
+def predictTextObjectTH(new_text):
     new_text = preprocess_text(new_text)
 
     new_text = tokenizer.texts_to_sequences([new_text])  # Convert text to sequences of integers
