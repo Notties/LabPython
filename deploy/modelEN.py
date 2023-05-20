@@ -32,7 +32,7 @@ def preprocess_text(text):
 def predictEN(new_text):
     new_text = preprocess_text(new_text)
     new_text = tokenizer.texts_to_sequences([new_text])  # Convert text to sequences of integers
-    new_text = pad_sequences(new_text, maxlen=129)
+    new_text = pad_sequences(new_text, maxlen=128)
     # Make the prediction
     prediction = model.predict(new_text)[0]
 
@@ -47,7 +47,7 @@ def predictEN(new_text):
 def predictTextObjectEN(new_text):
     new_text = preprocess_text(new_text)
     new_text = tokenizer.texts_to_sequences([new_text])  # Convert text to sequences of integers
-    new_text = pad_sequences(new_text, maxlen=129)
+    new_text = pad_sequences(new_text, maxlen=128)
     # Make the prediction
     prediction = model.predict(new_text)[0]
 
