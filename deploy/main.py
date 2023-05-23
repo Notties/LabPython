@@ -63,7 +63,7 @@ def predictObject(payload: dict):
         result = { "status": "error", "msg": "something worng :(" }
     return result
 
-# scrape comment route
+# scrape comments route
 class CommentRequest(BaseModel):
     url: str
 @app.post("/scrapeComment")
