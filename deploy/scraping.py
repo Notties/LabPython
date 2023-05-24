@@ -25,7 +25,7 @@ def scrape_comments(url):
 
     # Scroll to the bottom of the page
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    time.sleep(2)  # Wait for the page to load the new comments
+    time.sleep(3)  # Wait for the page to load the new comments
 
     # Extract comments
     comment_elements = driver.find_elements(

@@ -9,9 +9,9 @@ from keras.models import load_model
 from keras.utils import pad_sequences
 
 #load model and tokenizer
-with open('C:/Sentiment-Analysis-Model/savedmodel/tokenizerEN.pickle', 'rb') as handle:
+with open('C:/Project-Sentiment-Analysis/Sentiment-Analysis-Model/savedmodel/tokenizerEN.pickle', 'rb') as handle:
     tokenizer = pickle.load(handle)
-model = load_model('C:/Sentiment-Analysis-Model/savedmodel/sentiment_analysis_modelEN.h5')
+model = load_model('C:/Project-Sentiment-Analysis/Sentiment-Analysis-Model/savedmodel/sentiment_analysis_modelEN.h5')
 
 # Preprocess the text
 def preprocess_text(text):

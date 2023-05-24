@@ -13,7 +13,7 @@ from scraping import scrape_comments
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# create app
+# create apps
 app = FastAPI()
 
 # alow cross origin all origin
