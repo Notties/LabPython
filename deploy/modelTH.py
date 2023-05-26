@@ -9,9 +9,9 @@ from keras.models import load_model
 from keras.utils import pad_sequences
 
 #load model and tokenizer
-with open('C:/Project-Sentiment-Analysis/Sentiment-Analysis-Model/savedmodel/tokenizerTH.pickle', 'rb') as handle:
+with open('C:/Sentiment-Analysis-Model/savedmodel/tokenizerTH.pickle', 'rb') as handle:
     tokenizer = pickle.load(handle)
-model = load_model('C:/Project-Sentiment-Analysis/Sentiment-Analysis-Model/savedmodel/sentiment_analysis_modelTH.h5')
+model = load_model('C:/Sentiment-Analysis-Model/savedmodel/sentiment_analysis_modelTH.h5')
 
 # Define preprocess for Thai text
 def preprocess_text(text):
