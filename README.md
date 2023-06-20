@@ -1,7 +1,7 @@
 # Sentiment-Analysis-Model & API
 This is the source code thai/eng sentiment analysis model & API use for Education only
 
-check out this link for source code Sentiment analysis web application -> [Sentiment-Analysis-WebApp ](https://github.com/Notties/Sentiment-Analysis-WebApp)
+check out this link for source code [Sentiment-Analysis-WebApp ](https://github.com/Notties/Sentiment-Analysis-WebApp)
 
 ## Project structure
 ```text
