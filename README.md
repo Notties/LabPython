@@ -7,7 +7,7 @@ check out this link for source code Sentiment analysis web application -> [Senti
 ```text
     . root
     ├── 📂 datasets                   🔸 Datasets TH & EN
-    ├── 📂 datasets[DEV]              🔸 Datasets TH & EN for develop
+    ├── 📂 datasets[DEV]              🔸 Datasets TH & EN for development
     ├── 📂 deploy                     🔸 Deploy model folder
     |   └── 📄 main.py                     🔹 Fast API Route
     ├── 📂 models                     🔸 Model Sentiment analysis folder
