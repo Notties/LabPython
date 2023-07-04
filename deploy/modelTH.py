@@ -3,15 +3,22 @@ import pythainlp
 import emoji
 import pickle
 import numpy as np
+import os
 
 from pythainlp.corpus.common import thai_stopwords
 from keras.models import load_model
 from keras.utils import pad_sequences
 
-#load model and tokenizer
-with open('C:/Sentiment-Analysis-Model/savedmodel/tokenizerTH.pickle', 'rb') as handle:
+project_dir = os.getcwd()
+
+# Construct the file path relative to the project directory
+tokenizer_path = os.path.join(project_dir, 'savedmodel', 'tokenizerTH.pickle')
+model_path = os.path.join(project_dir, 'savedmodel', 'sentiment_analysis_modelTH.h5')
+
+# Load the tokenizer and model
+with open(tokenizer_path, 'rb') as handle:
     tokenizer = pickle.load(handle)
-model = load_model('C:/Sentiment-Analysis-Model/savedmodel/sentiment_analysis_modelTH.h5')
+model = load_model(model_path)
 
 # Define preprocess for Thai text
 def preprocess_text(text):

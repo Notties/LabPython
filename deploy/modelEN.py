@@ -3,15 +3,22 @@ import nltk
 import pickle
 import re
 import emoji
+import os
 
 from nltk.corpus import stopwords
 from keras.models import load_model
 from keras.utils import pad_sequences
 
-#load model and tokenizer
-with open('C:/Sentiment-Analysis-Model/savedmodel/tokenizerEN.pickle', 'rb') as handle:
+project_dir = os.getcwd()
+
+# Construct the file path relative to the project directory
+tokenizer_path = os.path.join(project_dir, 'savedmodel', 'tokenizerEN.pickle')
+model_path = os.path.join(project_dir, 'savedmodel', 'sentiment_analysis_modelEN.h5')
+
+# Load the tokenizer and model
+with open(tokenizer_path, 'rb') as handle:
     tokenizer = pickle.load(handle)
-model = load_model('C:/Sentiment-Analysis-Model/savedmodel/sentiment_analysis_modelEN.h5')
+model = load_model(model_path)
 
 # Preprocess the text
 def preprocess_text(text):
