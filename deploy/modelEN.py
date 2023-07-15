@@ -9,6 +9,11 @@ from nltk.corpus import stopwords
 from keras.models import load_model
 from keras.utils import pad_sequences
 
+# first run
+# import nltk
+# nltk.download('punkt')
+# nltk.download('stopwords')
+
 project_dir = os.getcwd()
 
 # Construct the file path relative to the project directory
@@ -37,18 +42,20 @@ def preprocess_text(text):
     return text
 
 def predictEN(new_text):
-    new_text = preprocess_text(new_text)
-    new_text = tokenizer.texts_to_sequences([new_text])  # Convert text to sequences of integers
-    new_text = pad_sequences(new_text, maxlen=129)
-    # Make the prediction
-    prediction = model.predict(new_text)[0]
+    try:
+        new_text = preprocess_text(new_text)
+        new_text = tokenizer.texts_to_sequences([new_text])  # Convert text to sequences of integers
+        new_text = pad_sequences(new_text, maxlen=129)
+        # Make the prediction
+        prediction = model.predict(new_text)[0]
 
-    # Get the predicted sentiment and confidence level
-    sentiments = ['negative', 'neutral', 'positive']
-    sentiment = sentiments[np.argmax(prediction)]
-    confidence = round(float(np.max(prediction)), 2)
-    percent = round(confidence * 100)
-
+        # Get the predicted sentiment and confidence level
+        sentiments = ['negative', 'neutral', 'positive']
+        sentiment = sentiments[np.argmax(prediction)]
+        confidence = round(float(np.max(prediction)), 2)
+        percent = round(confidence * 100)
+    except Exception as error:
+        print(error)
     return {'sentiment': sentiment, 'percentage': f'{percent}'}
 
 def predictTextObjectEN(new_text):

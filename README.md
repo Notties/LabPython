@@ -26,3 +26,10 @@ check out this link for source code [Sentiment-Analysis-WebApp ](https://github.
 ### Datasets English
 - [Kaggle - Sentiment Analysis Dataset](https://www.kaggle.com/datasets/abhi8923shriv/sentiment-analysis-dataset)
 - [Kaggle - Emotion Dataset for Emotion Recognition Tasks](https://www.kaggle.com/datasets/parulpandey/emotion-dataset)
+
+### Lib nltk
+```py
+import nltk
+nltk.download('punkt')
+nltk.download('stopwords')
+```

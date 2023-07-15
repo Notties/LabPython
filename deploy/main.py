@@ -39,9 +39,9 @@ def predict(payload: dict):
             data = model_predictTH(text)
         else:
             data = model_predictEN(text)  
-    except:
-        data = { "status": "error", "msg": "something worng :(" }
-    return { "status": "success", "data": data }
+    except Exception as error:
+        data = { "status": "error", "msg": error }
+    return { "data": data }
 
 # predictObject route
 @app.post('/predictObject')
